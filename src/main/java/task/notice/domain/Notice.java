@@ -3,6 +3,7 @@ package task.notice.domain;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import task.notice.dto.request.UpdateNoticeDto;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -42,5 +43,17 @@ public class Notice extends Timestamp {
     public void setAttachFile(AttachFile file) {
         this.getAttachFiles().add(file);
         file.setNotice(this);
+    }
+
+    // == 도메인 메서드 ==//
+    public void view() {
+        this.viewCount++;
+    }
+
+    // 수정
+    public void update(UpdateNoticeDto dto) {
+        this.title = dto.getTitle();
+        this.content = dto.getContent();
+        this.endTime = dto.getEndTime();
     }
 }
