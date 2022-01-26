@@ -15,7 +15,7 @@ public class SaveNoticeDto {
     private List<SaveAttachFileDto> attachFiles = new ArrayList<>();
 
     public Notice toEntity() {
-        Notice notice = new Notice(title, content, endTime);
+        Notice notice = new Notice(title, content, endTime, null);
         attachFiles.stream().map(SaveAttachFileDto::toEntity).forEach(notice::setAttachFile);
         return notice;
     }

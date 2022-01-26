@@ -37,9 +37,17 @@ public class NoticeService {
         return savedNotice.getId();
     }
 
-    // 공지사항 목록조회
-
+    // 제목, 내용, 등록일시, 조회수, 작성자
     // 공지사항 상세조회
+    public void findNotice(Long noticeId) {
+        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> {
+            throw new IllegalArgumentException("존재하지 않는 공지사항 입니다.");
+        });
+
+
+    }
+
+    // 공지사항 목록조회
 
     // 공지사항 수정
 

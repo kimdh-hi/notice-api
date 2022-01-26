@@ -29,14 +29,19 @@ public class Notice extends Timestamp {
 
     private Long viewCount;
 
+    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User user;
+
     @OneToMany(mappedBy = "notice", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AttachFile> attachFiles = new ArrayList<>();
 
-    public Notice(String title, String content, LocalDateTime endTime) {
+    public Notice(String title, String content, LocalDateTime endTime, User user) {
         this.title = title;
         this.content = content;
         this.endTime = endTime;
         this.viewCount = 0L;
+        this.user = user;
     }
 
     // 양방향 연관관계 편의 메서드

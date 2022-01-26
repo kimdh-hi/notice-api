@@ -24,7 +24,7 @@ public class NoticeRepositoryTest {
         // given
         AttachFile file1 = new AttachFile("testOriginalFileName1.txt", "testSavedFileName1.txt");
         AttachFile file2 = new AttachFile("testOriginalFileName2.txt", "testSavedFileName2.txt");
-        Notice notice = new Notice("제목", "내용", LocalDateTime.now().plusDays(7));
+        Notice notice = new Notice("제목", "내용", LocalDateTime.now().plusDays(7), null);
         notice.setAttachFile(file1);
         notice.setAttachFile(file2);
 
@@ -47,7 +47,7 @@ public class NoticeRepositoryTest {
         // given
         AttachFile file1 = new AttachFile("testOriginalFileName1.txt", "testSavedFileName1.txt");
         AttachFile file2 = new AttachFile("testOriginalFileName2.txt", "testSavedFileName2.txt");
-        Notice notice = new Notice("제목", "내용", LocalDateTime.now().plusDays(7));
+        Notice notice = new Notice("제목", "내용", LocalDateTime.now().plusDays(7), null);
         notice.setAttachFile(file1);
         notice.setAttachFile(file2);
         Notice savedNotice = noticeRepository.save(notice);
@@ -73,7 +73,7 @@ public class NoticeRepositoryTest {
         // given
         AttachFile file1 = new AttachFile("testOriginalFileName1.txt", "testSavedFileName1.txt");
         AttachFile file2 = new AttachFile("testOriginalFileName2.txt", "testSavedFileName2.txt");
-        Notice notice = new Notice("제목", "내용", LocalDateTime.now().plusDays(7));
+        Notice notice = new Notice("제목", "내용", LocalDateTime.now().plusDays(7), null);
         notice.setAttachFile(file1);
         notice.setAttachFile(file2);
         Notice savedNotice = noticeRepository.save(notice);

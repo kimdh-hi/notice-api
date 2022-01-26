@@ -13,4 +13,8 @@ public abstract class Timestamp {
 
     @CreatedDate
     private LocalDateTime createdAt;
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 }
