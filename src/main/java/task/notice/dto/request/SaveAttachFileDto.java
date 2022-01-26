@@ -1,9 +1,15 @@
 package task.notice.dto.request;
 
+import task.notice.domain.AttachFile;
+
 public class SaveAttachFileDto {
 
     private String originalFileName;
     private String saveFileName;
+
+    public AttachFile toEntity() {
+        return new AttachFile(originalFileName, saveFileName);
+    }
 
     public SaveAttachFileDto(String originalFileName, String saveFileName) {
         this.originalFileName = originalFileName;

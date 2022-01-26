@@ -1,5 +1,7 @@
 package task.notice.dto.request;
 
+import task.notice.domain.Notice;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,8 +14,17 @@ public class SaveNoticeDto {
 
     private List<SaveAttachFileDto> attachFiles = new ArrayList<>();
 
+    public Notice toEntity() {
+        Notice notice = new Notice(title, content, endTime);
+        attachFiles.stream().map(SaveAttachFileDto::toEntity).forEach(notice::setAttachFile);
+        return notice;
+    }
+
     public void addFile(SaveAttachFileDto dto) {
         this.attachFiles.add(dto);
+    }
+
+    public SaveNoticeDto() {
     }
 
     public SaveNoticeDto(String title, String content, LocalDateTime endTime) {

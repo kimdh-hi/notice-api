@@ -2,6 +2,7 @@ package task.notice.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import task.notice.domain.AttachFile;
 import task.notice.domain.Notice;
@@ -13,6 +14,7 @@ import task.notice.utils.AwsS3Uploader;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
 public class NoticeService {
@@ -21,24 +23,14 @@ public class NoticeService {
     private final AwsS3Uploader s3Uploader;
 
     // 공지사항 등록
-    public Long saveNotice(SaveNoticeDto dto, List<MultipartFile> multipartFiles) {
+    @Transactional
+    public Long saveNotice(SaveNoticeDto saveDto, List<MultipartFile> multipartFiles) {
+
         // 파일 S3에 업도르 후 업로드 된 경로를 포함하는 경로 반환
+        upload(saveDto, multipartFiles);
 
-        for(MultipartFile file: multipartFiles) {
-            String uploadUrl = s3Uploader.upload(file);
-            SaveAttachFileDto fileDto = new SaveAttachFileDto(file.getOriginalFilename(), uploadUrl);
-            dto.addFile(fileDto);
-        }
-
-        // AttachFile, Notice 생성 및 저장
-        List<AttachFile> attachFiles = dto.getAttachFiles().stream().map(
-                file -> new AttachFile(file.getOriginalFileName(), file.getSaveFileName())
-        ).collect(Collectors.toList());
-
-        Notice notice = new Notice(dto.getTitle(), dto.getContent(), dto.getEndTime());
-        attachFiles.stream().forEach(
-                file -> notice.setAttachFile(file)
-        );
+        // AttachFile 생성
+        Notice notice = saveDto.toEntity();
 
         Notice savedNotice = noticeRepository.save(notice);
 
@@ -52,4 +44,13 @@ public class NoticeService {
     // 공지사항 수정
 
     // 공지사항 삭제
+
+
+    private void upload(SaveNoticeDto noticeDto, List<MultipartFile> files) {
+        for(MultipartFile file: files) {
+            String uploadUrl = s3Uploader.upload(file);
+            SaveAttachFileDto fileDto = new SaveAttachFileDto(file.getOriginalFilename(), uploadUrl);
+            noticeDto.addFile(fileDto);
+        }
+    }
 }
