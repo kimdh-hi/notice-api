@@ -1,0 +1,38 @@
+spring:
+  h2:
+    console:
+      enabled: true
+  datasource:
+    url:  jdbc:h2:tcp://localhost/~/notice-api
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+        format_sql: true
+    show-sql: true
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+    stack:
+      auto: false
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: ${S3_BUCKET_NAME}
+      bucket.url: https://${S3_BUCKET_NAME}.s3.ap-northeast-2.amazonaws.com/
+
+logging:
+  level:
+    org:
+      springframework:
+        web: DEBUG
+
+

@@ -4,8 +4,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import task.notice.domain.AttachFile;
-import task.notice.domain.Notice;
+import task.notice.notice.domain.AttachFile;
+import task.notice.notice.domain.Notice;
+import task.notice.notice.repository.NoticeRepository;
 
 import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
@@ -15,7 +16,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @DataJpaTest
 public class NoticeRepositoryTest {
 
-    @Autowired NoticeRepository noticeRepository;
+    @Autowired
+    NoticeRepository noticeRepository;
     @Autowired EntityManager em;
 
     @DisplayName("공지사항 생성")
