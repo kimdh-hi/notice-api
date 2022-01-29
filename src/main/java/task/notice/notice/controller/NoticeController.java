@@ -3,10 +3,8 @@ package task.notice.notice.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import task.notice.notice.dto.request.SaveNoticeDto;
@@ -29,14 +27,13 @@ public class NoticeController {
     @PostMapping
     public ResponseEntity saveNotice(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam SaveNoticeDto saveNotice, @RequestParam(name = "files", required = false) List<MultipartFile> files) {
-
-        log.info("saveNotice saveNotice={}", saveNotice);
+            @RequestPart("notice") SaveNoticeDto saveNoticeDto,
+            @RequestPart(required = false) List<MultipartFile> file) {
 
         User user = userDetails.getUser();
-        noticeService.saveNotice(saveNotice, files, user);
+        noticeService.saveNotice(saveNoticeDto, file, user);
 
-        return new ResponseEntity(HttpStatus.CREATED);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     @GetMapping("/{noticeId}")
@@ -50,6 +47,9 @@ public class NoticeController {
     public ResponseEntity updateNotice(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long noticeId, @RequestBody UpdateNoticeDto updateNotice) {
+
+        log.info("update noticeId={}", noticeId);
+        log.info("update dto={}", updateNotice);
 
         User user = userDetails.getUser();
         noticeService.updateNotice(noticeId, updateNotice, user);

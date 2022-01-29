@@ -6,17 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@NoArgsConstructor
-@AllArgsConstructor
 @Data
-public class UpdateNoticeDto {
-
+@AllArgsConstructor
+@NoArgsConstructor
+public class SaveNotice {
     private String title;
     private String content;
-    @JsonSerialize(using = ToStringSerializer.class)
     private LocalDateTime endTime;
-
 }

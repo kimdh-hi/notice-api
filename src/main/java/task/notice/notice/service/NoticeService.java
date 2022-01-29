@@ -33,7 +33,7 @@ public class NoticeService {
         // 파일 S3에 업도르 후 업로드 된 경로를 포함하는 경로 반환
         List<AttachFile> attachFiles = upload(files);
         // AttachFile 생성
-        Notice notice = saveDto.toEntity(user);
+        Notice notice = new Notice(saveDto.getTitle(), saveDto.getContent(), saveDto.getEndTime(), user);
         attachFiles.forEach(notice::setAttachFile);
 
         Notice savedNotice = noticeRepository.save(notice);

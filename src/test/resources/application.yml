@@ -32,7 +32,6 @@ cloud:
 logging:
   level:
     org:
-      springframework:
-        web: DEBUG
-
-
+      apache:
+        coyote:
+          http11: debug

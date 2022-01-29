@@ -3,20 +3,18 @@ package task.notice.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.WebApplicationContext;
-import task.notice.common.auth.TokenExtractor;
 import task.notice.common.utils.JwtUtils;
 import task.notice.helper.NoticeTestHelper;
 import task.notice.helper.UserTestHelper;
@@ -40,8 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 public class NoticeControllerTest {
 
-    @Autowired
-    MockMvc mockMvc;
+    @Autowired MockMvc mockMvc;
 
     @Autowired UserRepository userRepository;
     @Autowired NoticeRepository noticeRepository;
@@ -62,22 +59,23 @@ public class NoticeControllerTest {
         generateTestNotice();
     }
 
+
     @DisplayName("공지사항 등록 테스트")
     @Test
-    void saveNoticeApiTest() throws Exception {
-        MockMultipartFile multipartFile1 = new MockMultipartFile("files", "test.txt", "text/plain", "test file".getBytes(StandardCharsets.UTF_8) );
-        MockMultipartFile multipartFile2 = new MockMultipartFile("files", "test2.txt", "text/plain", "test file2".getBytes(StandardCharsets.UTF_8) );
+    void saveNoticeApiTest2() throws Exception {
+        MockMultipartFile file1 = new MockMultipartFile("file", "test1.txt", MediaType.TEXT_PLAIN_VALUE, "test file1".getBytes(StandardCharsets.UTF_8) );
+        MockMultipartFile file2 = new MockMultipartFile("file", "test2.txt", MediaType.TEXT_PLAIN_VALUE, "test file2".getBytes(StandardCharsets.UTF_8) );
 
-        SaveNoticeDto noticeDto = new SaveNoticeDto("title1", "content1", LocalDateTime.now().plusDays(7));
-        String noticeDtoJson = mapper.writeValueAsString(noticeDto);
-        MockMultipartFile notice = new MockMultipartFile("saveNoticeDto", "saveNoticeDto", "application/json", noticeDtoJson.getBytes(StandardCharsets.UTF_8));
+        String content = mapper.writeValueAsString(new SaveNoticeDto("title", "content", LocalDateTime.now().plusDays(7)));
+        MockMultipartFile saveNotice = new MockMultipartFile("notice", "jsondata", MediaType.APPLICATION_JSON_VALUE, content.getBytes(StandardCharsets.UTF_8));
 
         mockMvc.perform(multipart("/notices")
-                        .file(multipartFile1)
-                        .file(multipartFile2)
-                        .file(notice)
-                        .header(HttpHeaders.AUTHORIZATION, TokenExtractor.TOKEN_TYPE + testToken)
-                        .contentType(MediaType.MULTIPART_MIXED_VALUE)
+                        .file(file1)
+                        .file(file2)
+                        .file(saveNotice)
+                        .contentType(MediaType.MULTIPART_MIXED)
+                        .accept(MediaType.APPLICATION_JSON) .characterEncoding("UTF-8")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + testToken)
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -87,17 +85,18 @@ public class NoticeControllerTest {
     @DisplayName("실패 테스트 토큰없이 공지사항 등록")
     @Test
     void saveNoticeApiFailTest() throws Exception {
-        MockMultipartFile multipartFile1 = new MockMultipartFile("files", "test.txt", "text/plain", "test file".getBytes(StandardCharsets.UTF_8) );
-        MockMultipartFile multipartFile2 = new MockMultipartFile("files", "test2.txt", "text/plain", "test file2".getBytes(StandardCharsets.UTF_8) );
+        MockMultipartFile file1 = new MockMultipartFile("file", "test1.txt", MediaType.TEXT_PLAIN_VALUE, "test file1".getBytes(StandardCharsets.UTF_8) );
+        MockMultipartFile file2 = new MockMultipartFile("file", "test2.txt", MediaType.TEXT_PLAIN_VALUE, "test file2".getBytes(StandardCharsets.UTF_8) );
 
-        SaveNoticeDto noticeDto = new SaveNoticeDto("title1", "content1", LocalDateTime.now().plusDays(7));
-        String noticeDtoJson = mapper.writeValueAsString(noticeDto);
-        MockMultipartFile notice = new MockMultipartFile("SaveNoticeDto", "SaveNoticeDto", "application/json", noticeDtoJson.getBytes(StandardCharsets.UTF_8));
+        String content = mapper.writeValueAsString(new SaveNoticeDto("title", "content", LocalDateTime.now().plusDays(7)));
+        MockMultipartFile saveNotice = new MockMultipartFile("notice", "jsondata", MediaType.APPLICATION_JSON_VALUE, content.getBytes(StandardCharsets.UTF_8));
 
         mockMvc.perform(multipart("/notices")
-                        .file(multipartFile1)
-                        .file(multipartFile2)
-                        .file(notice)
+                        .file(file1)
+                        .file(file2)
+                        .file(saveNotice)
+                        .contentType(MediaType.MULTIPART_MIXED)
+                        .accept(MediaType.APPLICATION_JSON) .characterEncoding("UTF-8")
                 )
                 .andDo(print())
                 .andExpect(status().isForbidden())
@@ -119,9 +118,9 @@ public class NoticeControllerTest {
         String updateNoticeJson = mapper.writeValueAsString(updateNotice);
 
         mockMvc.perform(put("/notices/{noticeId}", testNotice.getId())
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(updateNoticeJson)
-                .header(TokenExtractor.AUTHORIZATION_HEADER, TokenExtractor.TOKEN_TYPE + testToken)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + testToken)
         )
         .andDo(print())
         .andExpect(
@@ -135,7 +134,7 @@ public class NoticeControllerTest {
         Long targetId = testNotice.getId();
 
         mockMvc.perform(delete("/notices/{noticeId}", targetId)
-                .header(TokenExtractor.AUTHORIZATION_HEADER, TokenExtractor.TOKEN_TYPE + testToken)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + testToken)
         )
                 .andDo(print())
                 .andExpect(

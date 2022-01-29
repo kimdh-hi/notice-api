@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,26 +41,19 @@ public class JwtAuthenticateFilter extends OncePerRequestFilter {
         if (isPreflightRequest(request)) filterChain.doFilter(request, response);
 
         String token = TokenExtractor.extract(request);
+        log.info("jwt-filter token={}", token);
         try {
             if (!Objects.isNull(token) && !"".equals(token) && jwtUtils.validate(token)) {
-                User user = extractUser(token);
-
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(new UserDetailsImpl(user), null, AuthorityUtils.NO_AUTHORITIES);
-                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                String subject = jwtUtils.getSubject(token);
+                log.info("jwt-filter subject={}", subject);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(subject);
+                Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
             filterChain.doFilter(request, response);
         } catch (Exception e) {
             response.setStatus(HttpStatus.BAD_REQUEST.value());
         }
-    }
-
-    private User extractUser(String token) {
-        Long userId = Long.valueOf(jwtUtils.getSubject(token));
-        return userRepository.findById(userId).orElseThrow(() -> {
-            throw new UsernameNotFoundException("존재하지 않는 사용자입니다.");
-        });
     }
 
     private boolean isPreflightRequest(HttpServletRequest request) {

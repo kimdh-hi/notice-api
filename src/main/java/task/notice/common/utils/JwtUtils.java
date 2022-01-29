@@ -1,11 +1,13 @@
 package task.notice.common.utils;
 
 import io.jsonwebtoken.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
+@Slf4j
 @Component
 public class JwtUtils {
     private final String JWT_SECRET = "secret";
@@ -24,10 +26,14 @@ public class JwtUtils {
     }
 
     public boolean validate(String token) {
+        log.info("jwtUtils validate 호출");
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(JWT_SECRET).parseClaimsJws(token);
-            return !claims.getBody().getExpiration().before(new Date());
+            boolean result = !claims.getBody().getExpiration().before(new Date());
+            log.info("jwtUtils validate 성공 {}", result);
+            return result;
         } catch (JwtException | IllegalArgumentException e) {
+            log.info("jwtUtils validate 실패");
             return false;
         }
     }
