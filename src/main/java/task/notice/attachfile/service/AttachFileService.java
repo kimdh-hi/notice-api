@@ -29,15 +29,6 @@ public class AttachFileService {
         attachFile.delete();
     }
 
-    @Transactional
-    public void addAttachFile(Long noticeId, List<MultipartFile> files, User user) {
-        checkNoticeOwner(noticeId, user, OwnerMismatchException.UPDATE_MISMATCH);
-
-        List<AttachFile> attachFiles = s3Utils.upload(files);
-        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공지사항입니다."));
-        attachFiles.forEach(notice::setAttachFile);
-    }
-
     private void checkNoticeOwner(Long noticeId, User user, String message) {
         if (!noticeRepository.existsByUserId(noticeId, user.getId())) {
             throw new OwnerMismatchException(message);

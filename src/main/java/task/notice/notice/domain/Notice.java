@@ -3,13 +3,14 @@ package task.notice.notice.domain;
 import lombok.*;
 import task.notice.attachfile.domain.AttachFile;
 import task.notice.common.domain.Timestamp;
-import task.notice.user.domain.User;
 import task.notice.notice.dto.request.UpdateNoticeDto;
+import task.notice.user.domain.User;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Builder
 @AllArgsConstructor
@@ -28,8 +29,10 @@ public class Notice extends Timestamp {
     @Column(nullable = false)
     private String content;
 
-    private LocalDateTime endTime;
+    @Column(nullable = false)
+    private LocalDate endDate;
 
+    @Column(nullable = false)
     private Long viewCount;
 
     @JoinColumn(name = "user_id")
@@ -39,10 +42,10 @@ public class Notice extends Timestamp {
     @OneToMany(mappedBy = "notice", cascade = CascadeType.ALL)
     private List<AttachFile> attachFiles = new ArrayList<>();
 
-    public Notice(String title, String content, LocalDateTime endTime, User user) {
+    public Notice(String title, String content, LocalDate endDate, User user) {
         this.title = title;
         this.content = content;
-        this.endTime = endTime;
+        this.endDate = endDate;
         this.viewCount = 0L;
         this.user = user;
     }
@@ -64,8 +67,8 @@ public class Notice extends Timestamp {
 
     // 수정
     public void update(UpdateNoticeDto dto) {
-        this.title = dto.getTitle();
-        this.content = dto.getContent();
-        this.endTime = dto.getEndTime();
+        if (!Objects.isNull(dto.getTitle())) this.title = dto.getTitle();
+        if (!Objects.isNull(dto.getContent())) this.content = dto.getContent();
+        if (!Objects.isNull(dto.getEndDate())) this.endDate = dto.getEndDate();
     }
 }

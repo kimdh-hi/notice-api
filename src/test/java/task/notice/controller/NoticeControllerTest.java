@@ -3,10 +3,7 @@ package task.notice.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,7 +12,10 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import task.notice.attachfile.domain.AttachFile;
+import task.notice.attachfile.repository.AttachFileRepository;
 import task.notice.common.jwt.JwtUtils;
+import task.notice.helper.AttachFileTestHelper;
 import task.notice.helper.NoticeTestHelper;
 import task.notice.helper.UserTestHelper;
 import task.notice.notice.domain.Notice;
@@ -25,7 +25,9 @@ import task.notice.notice.repository.NoticeRepository;
 import task.notice.user.domain.User;
 import task.notice.user.repository.UserRepository;
 
+import javax.persistence.EntityManager;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -42,10 +44,13 @@ public class NoticeControllerTest {
 
     @Autowired UserRepository userRepository;
     @Autowired NoticeRepository noticeRepository;
+    @Autowired AttachFileRepository attachFileRepository;
     @Autowired JwtUtils jwtUtils;
+    @Autowired EntityManager em;
 
     ObjectMapper mapper;
     User testUser;
+    AttachFile testAttachFile;
     String testToken1;
     String testToken2;
     Notice testNotice;
@@ -58,6 +63,7 @@ public class NoticeControllerTest {
 
         testToken1 = generateToken("test1", "test1");
         generateTestNotice();
+        generateTestAttachFile();
         testToken2 = generateToken("test2", "test2");
     }
 
@@ -68,7 +74,7 @@ public class NoticeControllerTest {
         MockMultipartFile file1 = new MockMultipartFile("file", "test1.txt", MediaType.TEXT_PLAIN_VALUE, "test file1".getBytes(StandardCharsets.UTF_8) );
         MockMultipartFile file2 = new MockMultipartFile("file", "test2.txt", MediaType.TEXT_PLAIN_VALUE, "test file2".getBytes(StandardCharsets.UTF_8) );
 
-        String content = mapper.writeValueAsString(new SaveNoticeDto("title", "content", LocalDateTime.now().plusDays(7)));
+        String content = mapper.writeValueAsString(new SaveNoticeDto("title", "content", LocalDate.now().plusDays(7)));
         MockMultipartFile saveNotice = new MockMultipartFile("notice", "jsondata", MediaType.APPLICATION_JSON_VALUE, content.getBytes(StandardCharsets.UTF_8));
 
         mockMvc.perform(multipart("/notices")
@@ -89,7 +95,7 @@ public class NoticeControllerTest {
         MockMultipartFile file1 = new MockMultipartFile("file", "test1.txt", MediaType.TEXT_PLAIN_VALUE, "test file1".getBytes(StandardCharsets.UTF_8) );
         MockMultipartFile file2 = new MockMultipartFile("file", "test2.txt", MediaType.TEXT_PLAIN_VALUE, "test file2".getBytes(StandardCharsets.UTF_8) );
 
-        String content = mapper.writeValueAsString(new SaveNoticeDto("title", "content", LocalDateTime.now().plusDays(7)));
+        String content = mapper.writeValueAsString(new SaveNoticeDto("title", "content", LocalDate.now().plusDays(7)));
         MockMultipartFile saveNotice = new MockMultipartFile("notice", "jsondata", MediaType.APPLICATION_JSON_VALUE, content.getBytes(StandardCharsets.UTF_8));
 
         mockMvc.perform(multipart("/notices")
@@ -112,10 +118,21 @@ public class NoticeControllerTest {
                 .andExpect(status().isOk());
     }
 
+    @DisplayName("공지사항 목록 조회 테스트")
+    @Test
+    void findNoticeListTest() throws Exception {
+        mockMvc.perform(get("/notices")
+                .param("page", "0")
+                .param("size", "10")
+        )
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
     @DisplayName("공지사항 수정 테스트")
     @Test
     void updateNoticeTest() throws Exception {
-        UpdateNoticeDto updateNotice = new UpdateNoticeDto("updatedTitle", "updatedContent", LocalDateTime.now().plusDays(14));
+        UpdateNoticeDto updateNotice = new UpdateNoticeDto("updatedTitle", "updatedContent", LocalDate.now().plusDays(14));
         String updateNoticeJson = mapper.writeValueAsString(updateNotice);
 
         mockMvc.perform(put("/notices/{noticeId}", testNotice.getId())
@@ -146,7 +163,7 @@ public class NoticeControllerTest {
     @DisplayName("실패 테스트 - 자신이 등록한 공지가 아닌 공지를 수정 테스트")
     @Test
     void updateNoticeOwnerMismatchTest() throws Exception {
-        UpdateNoticeDto updateNotice = new UpdateNoticeDto("updatedTitle", "updatedContent", LocalDateTime.now().plusDays(14));
+        UpdateNoticeDto updateNotice = new UpdateNoticeDto("updatedTitle", "updatedContent", LocalDate.now().plusDays(14));
         String updateNoticeJson = mapper.writeValueAsString(updateNotice);
         Long targetId = testNotice.getId();
 
@@ -201,5 +218,13 @@ public class NoticeControllerTest {
     private void generateTestNotice() {
         testNotice = NoticeTestHelper.createNotice("testTitle", "testContent", 7, testUser);
         noticeRepository.save(testNotice);
+    }
+
+    private void generateTestAttachFile() {
+        Notice notice = noticeRepository.findById(testNotice.getId()).get();
+        testAttachFile = AttachFileTestHelper.createAttachFile("testFileName.txt", "testSaveName.txt");
+        notice.setAttachFile(testAttachFile);
+        em.flush();
+        em.clear();
     }
 }

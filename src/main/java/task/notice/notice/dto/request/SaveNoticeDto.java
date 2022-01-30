@@ -1,12 +1,11 @@
 package task.notice.notice.dto.request;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
@@ -15,7 +14,7 @@ public class SaveNoticeDto {
 
     private String title;
     private String content;
-    @JsonSerialize(using = ToStringSerializer.class)
-    private LocalDateTime endTime;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate endDate;
 
 }

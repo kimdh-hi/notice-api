@@ -37,7 +37,7 @@ public class UserService {
             throw new BadCredentialsException("비밀번호가 틀립니다.");
         }
 
-        String token = jwtUtils.createToken(String.valueOf(user.getId()));
+        String token = jwtUtils.createToken(requestDto.getUsername());
 
         return TokenResponseDto.from(token);
     }

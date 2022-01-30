@@ -2,20 +2,26 @@ package task.notice.notice.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import task.notice.attachfile.repository.AttachFileRepository;
 import task.notice.exception.exception.OwnerMismatchException;
 import task.notice.attachfile.domain.AttachFile;
 import task.notice.notice.domain.Notice;
 import task.notice.notice.dto.request.SaveNoticeDto;
 import task.notice.notice.dto.request.UpdateNoticeDto;
+import task.notice.notice.dto.response.AttachFileResponseDto;
 import task.notice.notice.dto.response.NoticeResponseDto;
 import task.notice.notice.repository.NoticeRepository;
 import task.notice.common.aws.AwsS3Utils;
 import task.notice.user.domain.User;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Transactional(readOnly = true)
@@ -24,6 +30,7 @@ import java.util.List;
 public class NoticeService {
 
     private final NoticeRepository noticeRepository;
+    private final AttachFileRepository attachFileRepository;
     private final AwsS3Utils s3Utils;
 
     // 공지사항 등록
@@ -33,7 +40,7 @@ public class NoticeService {
         // 파일 S3에 업도르 후 업로드 된 경로를 포함하는 경로 반환
         List<AttachFile> attachFiles = s3Utils.upload(files);
         // AttachFile 생성
-        Notice notice = new Notice(saveDto.getTitle(), saveDto.getContent(), saveDto.getEndTime(), user);
+        Notice notice = new Notice(saveDto.getTitle(), saveDto.getContent(), saveDto.getEndDate(), user);
         attachFiles.forEach(notice::setAttachFile);
 
         Notice savedNotice = noticeRepository.save(notice);
@@ -44,8 +51,19 @@ public class NoticeService {
     // 공지사항 상세조회
     public NoticeResponseDto findNotice(Long noticeId) {
         Notice notice = noticeRepository.findNotice(noticeId);
-        return NoticeResponseDto.fromEntity(notice);
+        notice.view();
+        List<AttachFileResponseDto> attachFilesDto = notice.getAttachFiles().stream().map(AttachFileResponseDto::of).collect(Collectors.toList());
+        return NoticeResponseDto.of(notice, attachFilesDto);
     }
+
+    // 공지사항 목록조회
+    public Page<NoticeResponseDto> findNoticeList(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<NoticeResponseDto> noticeList = noticeRepository.findNoticeList(pageable);
+
+        return noticeList;
+    }
+
 
     // 공지사항 수정
     @Transactional
@@ -61,6 +79,10 @@ public class NoticeService {
     public void deleteNotice(Long noticeId, User user) {
         checkNoticeOwner(noticeId, user, OwnerMismatchException.DELETE_MISMATCH);
 
+        List<AttachFile> attachFiles = noticeRepository.findNoticeAndAttachFiles(noticeId).getAttachFiles();
+        log.info("deleteNotice attachFile size = {}", attachFiles.size());
+        attachFiles.forEach(AttachFile::delete);
+
         noticeRepository.deleteById(noticeId);
     }
 
@@ -73,7 +95,6 @@ public class NoticeService {
         attachFiles.forEach(notice::setAttachFile);
     }
 
-    // 공지사항 목록조회
 
     private Notice getNotice(Long noticeId) {
         return noticeRepository.findById(noticeId).orElseThrow(() -> {

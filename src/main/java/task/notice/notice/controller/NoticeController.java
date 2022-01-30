@@ -2,7 +2,10 @@ package task.notice.notice.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +18,7 @@ import task.notice.notice.service.NoticeService;
 import task.notice.user.domain.User;
 import task.notice.user.domain.UserDetailsImpl;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -28,20 +32,31 @@ public class NoticeController {
     @PostMapping
     public ResponseEntity saveNotice(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestPart("notice") SaveNoticeDto saveNoticeDto,
-            @RequestPart(required = false) List<MultipartFile> file) {
+            @RequestParam String title, @RequestParam String content,
+            @DateTimeFormat(pattern = "yyyy-MM-dd")
+            @RequestParam LocalDate endDate,
+            @RequestParam(value = "file", required = false) List<MultipartFile> file) {
+
+        SaveNoticeDto saveNoticeDto = new SaveNoticeDto(title, content, endDate);
 
         User user = userDetails.getUser();
         noticeService.saveNotice(saveNoticeDto, file, user);
 
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity("공지사항 등록에 성공했습니다.", HttpStatus.OK);
     }
 
-    @GetMapping("/{noticeId}")
+    @GetMapping(value = "/{noticeId}")
     public ResponseEntity findNotice(@PathVariable Long noticeId) {
         NoticeResponseDto noticeResponseDto = noticeService.findNotice(noticeId);
 
-        return new ResponseEntity(noticeResponseDto, HttpStatus.OK);
+        return ResponseEntity.ok(noticeResponseDto);
+    }
+
+    @GetMapping
+    public ResponseEntity findNoticeList(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        Page<NoticeResponseDto> noticeList = noticeService.findNoticeList(page, size);
+
+        return ResponseEntity.ok(noticeList);
     }
 
     @PutMapping("/{noticeId}")

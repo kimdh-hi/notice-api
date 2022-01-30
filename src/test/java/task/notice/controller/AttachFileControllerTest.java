@@ -23,8 +23,7 @@ import task.notice.user.repository.UserRepository;
 
 import javax.persistence.EntityManager;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -90,7 +89,5 @@ public class AttachFileControllerTest {
         notice.setAttachFile(testAttachFile);
         em.flush();
         em.clear();
-
-
     }
 }
