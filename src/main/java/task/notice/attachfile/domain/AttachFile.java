@@ -21,18 +21,30 @@ public class AttachFile {
     @Column(nullable = false)
     private String originalFileName;
     @Column(nullable = false)
-    private String saveFileName;
+    private String fileUrl;
 
     @JoinColumn(name = "notice_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private Notice notice;
 
-    public AttachFile(String originalFileName, String saveFileName) {
+    private boolean deleted;
+
+    public AttachFile(String originalFileName, String fileUrl) {
         this.originalFileName = originalFileName;
-        this.saveFileName = saveFileName;
+        this.fileUrl = fileUrl;
+        this.deleted = false;
     }
 
     public void setNotice(Notice notice) {
         this.notice = notice;
+    }
+
+    public void delete() {
+        this.deleted = true;
+    }
+
+    public String getSaveFileName() {
+        int idx = fileUrl.lastIndexOf("/");
+        return fileUrl.substring(idx+1);
     }
 }

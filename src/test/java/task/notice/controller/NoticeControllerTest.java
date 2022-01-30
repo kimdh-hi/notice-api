@@ -80,8 +80,7 @@ public class NoticeControllerTest {
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + testToken1)
                 )
                 .andDo(print())
-                .andExpect(status().isOk())
-                .andReturn();
+                .andExpect(status().isOk());
     }
 
     @DisplayName("실패 테스트 - 토큰없이 공지사항 등록")
@@ -174,6 +173,23 @@ public class NoticeControllerTest {
                 .andExpect(
                         status().is4xxClientError()
                 );
+    }
+
+    @Test
+    @DisplayName("첨부파일 추가 테스트")
+    void addAttachFileTest() throws Exception {
+        MockMultipartFile file1 = new MockMultipartFile("file", "addTest1.txt", MediaType.TEXT_PLAIN_VALUE, "add file1".getBytes(StandardCharsets.UTF_8) );
+        MockMultipartFile file2 = new MockMultipartFile("file", "addTest2.txt", MediaType.TEXT_PLAIN_VALUE, "add file2".getBytes(StandardCharsets.UTF_8) );
+
+        mockMvc.perform(multipart("/notices/{noticeId}/attach-file", testNotice.getId())
+                        .file(file1)
+                        .file(file2)
+                        .contentType(MediaType.MULTIPART_MIXED)
+                        .accept(MediaType.APPLICATION_JSON) .characterEncoding("UTF-8")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + testToken1)
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
     }
 
     private String generateToken(String username, String password) {

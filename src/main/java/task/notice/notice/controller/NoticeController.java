@@ -28,20 +28,11 @@ public class NoticeController {
     @PostMapping
     public ResponseEntity saveNotice(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam("notice") SaveNoticeDto saveNoticeDto,
-            @RequestParam(required = false) List<MultipartFile> file) {
+            @RequestPart("notice") SaveNoticeDto saveNoticeDto,
+            @RequestPart(required = false) List<MultipartFile> file) {
 
         User user = userDetails.getUser();
         noticeService.saveNotice(saveNoticeDto, file, user);
-
-        return new ResponseEntity(HttpStatus.OK);
-    }
-
-    @PostMapping("/test")
-    public ResponseEntity saveNoticeTest(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam("notice") SaveNoticeTestDto saveNoticeTestDtoDtoDto,
-            @RequestParam(required = false) List<MultipartFile> file) {
 
         return new ResponseEntity(HttpStatus.OK);
     }
@@ -73,5 +64,18 @@ public class NoticeController {
         noticeService.deleteNotice(noticeId, user);
 
         return new ResponseEntity("공지사항 삭제 완료", HttpStatus.OK);
+    }
+
+    //첨부파일 추가
+    @PostMapping("/{noticeId}/attach-file")
+    public ResponseEntity addAttachFile(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam(required = false) List<MultipartFile> file,
+            @PathVariable Long noticeId) {
+
+        User user = userDetails.getUser();
+        noticeService.addAttachFile(noticeId, file, user);
+        int count = file.size();
+        return new ResponseEntity(count + "건 첨부파일 추가", HttpStatus.OK);
     }
 }

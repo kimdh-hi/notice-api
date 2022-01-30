@@ -83,7 +83,7 @@ public class NoticeRepositoryTest {
         assertEquals(notice.getViewCount(), findNotice.getViewCount());
         assertEquals(2, findNotice.getAttachFiles().size());
         assertEquals(file1.getOriginalFileName(), findNotice.getAttachFiles().get(0).getOriginalFileName());
-        assertEquals(file1.getSaveFileName(), findNotice.getAttachFiles().get(0).getSaveFileName());
+        assertEquals(file1.getFileUrl(), findNotice.getAttachFiles().get(0).getFileUrl());
     }
 
     @Test

@@ -15,6 +15,11 @@ spring:
         default_batch_fetch_size: 100
         format_sql: true
     show-sql: true
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
+
 
 cloud:
   aws:

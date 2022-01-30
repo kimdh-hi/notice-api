@@ -3,12 +3,10 @@ package task.notice.notice.repository;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import task.notice.notice.domain.Notice;
-import task.notice.notice.domain.QNotice;
-import task.notice.user.domain.QUser;
 
 import java.util.Objects;
-import java.util.Optional;
 
+import static task.notice.attachfile.domain.QAttachFile.attachFile;
 import static task.notice.notice.domain.QNotice.notice;
 import static task.notice.user.domain.QUser.user;
 
@@ -23,10 +21,11 @@ public class NoticeQueryRepositoryImpl implements NoticeQueryRepository {
 
     @Override
     public Notice findNotice(Long noticeId) {
-        return query.select(notice)
+        return query.select(notice).distinct()
                 .from(notice)
                 .join(notice.user, user).fetchJoin()
-                .where(noticeIdEquals(noticeId))
+                .join(notice.attachFiles, attachFile).fetchJoin()
+                .where(noticeIdEquals(noticeId).and(attachFile.deleted.isTrue()))
                 .fetchFirst();
     }
 

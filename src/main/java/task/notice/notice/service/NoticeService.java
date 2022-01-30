@@ -12,11 +12,10 @@ import task.notice.notice.dto.request.SaveNoticeDto;
 import task.notice.notice.dto.request.UpdateNoticeDto;
 import task.notice.notice.dto.response.NoticeResponseDto;
 import task.notice.notice.repository.NoticeRepository;
-import task.notice.common.aws.AwsS3Uploader;
+import task.notice.common.aws.AwsS3Utils;
 import task.notice.user.domain.User;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Transactional(readOnly = true)
@@ -25,14 +24,14 @@ import java.util.stream.Collectors;
 public class NoticeService {
 
     private final NoticeRepository noticeRepository;
-    private final AwsS3Uploader s3Uploader;
+    private final AwsS3Utils s3Utils;
 
     // 공지사항 등록
     @Transactional
     public Long saveNotice(SaveNoticeDto saveDto, List<MultipartFile> files, User user) {
 
         // 파일 S3에 업도르 후 업로드 된 경로를 포함하는 경로 반환
-        List<AttachFile> attachFiles = upload(files);
+        List<AttachFile> attachFiles = s3Utils.upload(files);
         // AttachFile 생성
         Notice notice = new Notice(saveDto.getTitle(), saveDto.getContent(), saveDto.getEndTime(), user);
         attachFiles.forEach(notice::setAttachFile);
@@ -51,7 +50,7 @@ public class NoticeService {
     // 공지사항 수정
     @Transactional
     public void updateNotice(Long noticeId, UpdateNoticeDto updateDto, User user) {
-        isMyNotice(noticeId, user, OwnerMismatchException.UPDATE_MISMATCH);
+        checkNoticeOwner(noticeId, user, OwnerMismatchException.UPDATE_MISMATCH);
 
         Notice notice = getNotice(noticeId);
         notice.update(updateDto);
@@ -60,9 +59,18 @@ public class NoticeService {
     // 공지사항 삭제
     @Transactional
     public void deleteNotice(Long noticeId, User user) {
-        isMyNotice(noticeId, user, OwnerMismatchException.DELETE_MISMATCH);
+        checkNoticeOwner(noticeId, user, OwnerMismatchException.DELETE_MISMATCH);
 
         noticeRepository.deleteById(noticeId);
+    }
+
+    @Transactional
+    public void addAttachFile(Long noticeId, List<MultipartFile> files, User user) {
+        checkNoticeOwner(noticeId, user, OwnerMismatchException.UPDATE_MISMATCH);
+
+        List<AttachFile> attachFiles = s3Utils.upload(files);
+        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공지사항입니다."));
+        attachFiles.forEach(notice::setAttachFile);
     }
 
     // 공지사항 목록조회
@@ -73,11 +81,7 @@ public class NoticeService {
         });
     }
 
-    private List<AttachFile> upload(List<MultipartFile> files) {
-        return files.stream().map(f -> new AttachFile(f.getOriginalFilename(), s3Uploader.upload(f))).collect(Collectors.toList());
-    }
-
-    private void isMyNotice(Long noticeId, User user, String message) {
+    private void checkNoticeOwner(Long noticeId, User user, String message) {
         if (!noticeRepository.existsByUserId(noticeId, user.getId())) {
            throw new OwnerMismatchException(message);
        }

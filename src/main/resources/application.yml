@@ -18,6 +18,10 @@ spring:
         format_sql: true
     show-sql: true
     open-in-view: false
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
 
 cloud:
   aws:

@@ -36,7 +36,7 @@ public class Notice extends Timestamp {
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    @OneToMany(mappedBy = "notice", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "notice", cascade = CascadeType.ALL)
     private List<AttachFile> attachFiles = new ArrayList<>();
 
     public Notice(String title, String content, LocalDateTime endTime, User user) {

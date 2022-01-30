@@ -45,6 +45,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers(HttpMethod.POST, "/notices/**").authenticated()
                     .antMatchers(HttpMethod.PUT, "/notices/**").authenticated()
                     .antMatchers(HttpMethod.DELETE, "/notices/**").authenticated()
+                    .antMatchers(HttpMethod.DELETE, "/attach-file/**").authenticated()
                     .anyRequest().permitAll()
                 .and()
                 .addFilterBefore(jwtAuthenticateFilter, UsernamePasswordAuthenticationFilter.class);
