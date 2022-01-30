@@ -8,6 +8,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import task.notice.notice.dto.request.SaveNoticeDto;
+import task.notice.notice.dto.request.SaveNoticeTestDto;
 import task.notice.notice.dto.request.UpdateNoticeDto;
 import task.notice.notice.dto.response.NoticeResponseDto;
 import task.notice.notice.service.NoticeService;
@@ -27,11 +28,20 @@ public class NoticeController {
     @PostMapping
     public ResponseEntity saveNotice(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestPart("notice") SaveNoticeDto saveNoticeDto,
-            @RequestPart(required = false) List<MultipartFile> file) {
+            @RequestParam("notice") SaveNoticeDto saveNoticeDto,
+            @RequestParam(required = false) List<MultipartFile> file) {
 
         User user = userDetails.getUser();
         noticeService.saveNotice(saveNoticeDto, file, user);
+
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @PostMapping("/test")
+    public ResponseEntity saveNoticeTest(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam("notice") SaveNoticeTestDto saveNoticeTestDtoDtoDto,
+            @RequestParam(required = false) List<MultipartFile> file) {
 
         return new ResponseEntity(HttpStatus.OK);
     }
@@ -47,9 +57,6 @@ public class NoticeController {
     public ResponseEntity updateNotice(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long noticeId, @RequestBody UpdateNoticeDto updateNotice) {
-
-        log.info("update noticeId={}", noticeId);
-        log.info("update dto={}", updateNotice);
 
         User user = userDetails.getUser();
         noticeService.updateNotice(noticeId, updateNotice, user);

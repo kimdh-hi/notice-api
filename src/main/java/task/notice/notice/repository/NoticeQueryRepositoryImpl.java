@@ -34,7 +34,7 @@ public class NoticeQueryRepositoryImpl implements NoticeQueryRepository {
     public boolean existsByUserId(Long noticeId, Long userId) {
         Integer exist = query.selectOne()
                 .from(notice)
-                .where(noticeIdEquals(noticeId), userIdEquals(userId))
+                .where(noticeIdEquals(noticeId).and(userIdEquals(userId)))
                 .fetchFirst();
 
         return exist != null;

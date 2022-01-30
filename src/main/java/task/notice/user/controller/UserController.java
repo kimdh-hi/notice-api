@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import task.notice.common.auth.TokenResponseDto;
+import task.notice.common.jwt.TokenResponseDto;
 import task.notice.user.dto.request.LoginRequestDto;
 import task.notice.user.dto.request.SignupRequestDto;
 import task.notice.user.service.UserService;

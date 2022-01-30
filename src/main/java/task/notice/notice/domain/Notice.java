@@ -1,6 +1,7 @@
 package task.notice.notice.domain;
 
 import lombok.*;
+import task.notice.attachfile.domain.AttachFile;
 import task.notice.common.domain.Timestamp;
 import task.notice.user.domain.User;
 import task.notice.notice.dto.request.UpdateNoticeDto;

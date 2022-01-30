@@ -2,10 +2,7 @@ package task.notice.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -13,10 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import task.notice.user.domain.User;
 import task.notice.user.dto.request.LoginRequestDto;
 import task.notice.user.dto.request.SignupRequestDto;
-import task.notice.common.auth.TokenResponseDto;
+import task.notice.common.jwt.TokenResponseDto;
 import task.notice.user.repository.UserRepository;
-import task.notice.user.domain.UserDetailsImpl;
-import task.notice.common.utils.JwtUtils;
+import task.notice.common.jwt.JwtUtils;
 
 @RequiredArgsConstructor
 @Slf4j

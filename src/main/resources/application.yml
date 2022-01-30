@@ -7,7 +7,9 @@ spring:
     username: sa
     password:
     driver-class-name: org.h2.Driver
+
   jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
     properties:
@@ -15,6 +17,7 @@ spring:
         default_batch_fetch_size: 100
         format_sql: true
     show-sql: true
+    open-in-view: false
 
 cloud:
   aws:

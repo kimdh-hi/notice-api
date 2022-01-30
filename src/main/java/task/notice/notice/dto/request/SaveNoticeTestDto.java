@@ -11,8 +11,9 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SaveNotice {
+public class SaveNoticeTestDto {
+
     private String title;
     private String content;
-    private LocalDateTime endTime;
+
 }

@@ -1,6 +1,6 @@
 package task.notice.notice.dto.request;
 
-import task.notice.notice.domain.AttachFile;
+import task.notice.attachfile.domain.AttachFile;
 
 public class SaveAttachFileDto {
 

@@ -15,7 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import task.notice.common.utils.JwtUtils;
+import task.notice.common.jwt.JwtUtils;
 import task.notice.helper.NoticeTestHelper;
 import task.notice.helper.UserTestHelper;
 import task.notice.notice.domain.Notice;
@@ -46,7 +46,8 @@ public class NoticeControllerTest {
 
     ObjectMapper mapper;
     User testUser;
-    String testToken;
+    String testToken1;
+    String testToken2;
     Notice testNotice;
 
     @BeforeEach
@@ -55,14 +56,15 @@ public class NoticeControllerTest {
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        generateTestUser();
+        testToken1 = generateToken("test1", "test1");
         generateTestNotice();
+        testToken2 = generateToken("test2", "test2");
     }
 
 
     @DisplayName("공지사항 등록 테스트")
     @Test
-    void saveNoticeApiTest2() throws Exception {
+    void saveNoticeApiTest() throws Exception {
         MockMultipartFile file1 = new MockMultipartFile("file", "test1.txt", MediaType.TEXT_PLAIN_VALUE, "test file1".getBytes(StandardCharsets.UTF_8) );
         MockMultipartFile file2 = new MockMultipartFile("file", "test2.txt", MediaType.TEXT_PLAIN_VALUE, "test file2".getBytes(StandardCharsets.UTF_8) );
 
@@ -75,14 +77,14 @@ public class NoticeControllerTest {
                         .file(saveNotice)
                         .contentType(MediaType.MULTIPART_MIXED)
                         .accept(MediaType.APPLICATION_JSON) .characterEncoding("UTF-8")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + testToken)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + testToken1)
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();
     }
 
-    @DisplayName("실패 테스트 토큰없이 공지사항 등록")
+    @DisplayName("실패 테스트 - 토큰없이 공지사항 등록")
     @Test
     void saveNoticeApiFailTest() throws Exception {
         MockMultipartFile file1 = new MockMultipartFile("file", "test1.txt", MediaType.TEXT_PLAIN_VALUE, "test file1".getBytes(StandardCharsets.UTF_8) );
@@ -120,7 +122,7 @@ public class NoticeControllerTest {
         mockMvc.perform(put("/notices/{noticeId}", testNotice.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(updateNoticeJson)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + testToken)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + testToken1)
         )
         .andDo(print())
         .andExpect(
@@ -134,7 +136,7 @@ public class NoticeControllerTest {
         Long targetId = testNotice.getId();
 
         mockMvc.perform(delete("/notices/{noticeId}", targetId)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + testToken)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + testToken1)
         )
                 .andDo(print())
                 .andExpect(
@@ -142,15 +144,46 @@ public class NoticeControllerTest {
                 );
     }
 
+    @DisplayName("실패 테스트 - 자신이 등록한 공지가 아닌 공지를 수정 테스트")
+    @Test
+    void updateNoticeOwnerMismatchTest() throws Exception {
+        UpdateNoticeDto updateNotice = new UpdateNoticeDto("updatedTitle", "updatedContent", LocalDateTime.now().plusDays(14));
+        String updateNoticeJson = mapper.writeValueAsString(updateNotice);
+        Long targetId = testNotice.getId();
 
-    private void generateTestUser() {
-        testUser = UserTestHelper.createUser("test","test");
+        mockMvc.perform(put("/notices/{noticeId}", targetId)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(updateNoticeJson)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + testToken2)
+        )
+                .andDo(print())
+                .andExpect(
+                        status().is4xxClientError()
+                );
+    }
+
+    @DisplayName("실패 테스트 - 자신이 등록한 공지가 아닌 공지를 삭제 테스트")
+    @Test
+    void deleteNoticeOwnerMismatchTest() throws Exception {
+        Long targetId = testNotice.getId();
+
+        mockMvc.perform(delete("/notices/{noticeId}", targetId)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + testToken2)
+                )
+                .andDo(print())
+                .andExpect(
+                        status().is4xxClientError()
+                );
+    }
+
+    private String generateToken(String username, String password) {
+        testUser = UserTestHelper.createUser(username, password);
         userRepository.save(testUser);
-        testToken = jwtUtils.createToken(testUser.getUsername());
+        return jwtUtils.createToken(testUser.getUsername());
     }
 
     private void generateTestNotice() {
-        testNotice = NoticeTestHelper.createNotice("testTitle", "testContent", testUser, 7);
+        testNotice = NoticeTestHelper.createNotice("testTitle", "testContent", 7, testUser);
         noticeRepository.save(testNotice);
     }
 }

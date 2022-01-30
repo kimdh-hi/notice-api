@@ -1,5 +1,6 @@
-package task.notice.common.utils;
+package task.notice.common.aws;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ public class S3FileUploadTest {
     @Test
     void fileUploaderTest() {
         MultipartFile multipartFile = new MockMultipartFile("file", "test.txt", "text/plain", "test file".getBytes(StandardCharsets.UTF_8));
-        uploader.upload(multipartFile);
+        String uploadUrl = uploader.upload(multipartFile);
+
+        Assertions.assertTrue(!"".equals(uploadUrl));
     }
 }

@@ -1,9 +1,10 @@
-package task.notice.notice.domain;
+package task.notice.attachfile.domain;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import task.notice.notice.domain.Notice;
 
 import javax.persistence.*;
 

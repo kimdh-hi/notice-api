@@ -1,10 +1,11 @@
-package task.notice.common.utils;
+package task.notice.common.aws;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+import task.notice.exception.exception.ExceptedException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,7 +27,7 @@ public class AwsS3Uploader {
         try {
             convertedFile = convert(file);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new ExceptedException("파일 업로드에 실패했습니다.");
         }
 
         String extension = extractExtension(convertedFile.getName());

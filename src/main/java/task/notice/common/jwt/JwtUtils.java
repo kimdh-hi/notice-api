@@ -1,4 +1,4 @@
-package task.notice.common.utils;
+package task.notice.common.jwt;
 
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
@@ -26,14 +26,11 @@ public class JwtUtils {
     }
 
     public boolean validate(String token) {
-        log.info("jwtUtils validate 호출");
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(JWT_SECRET).parseClaimsJws(token);
             boolean result = !claims.getBody().getExpiration().before(new Date());
-            log.info("jwtUtils validate 성공 {}", result);
             return result;
         } catch (JwtException | IllegalArgumentException e) {
-            log.info("jwtUtils validate 실패");
             return false;
         }
     }

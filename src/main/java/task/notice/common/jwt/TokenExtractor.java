@@ -1,4 +1,4 @@
-package task.notice.common.auth;
+package task.notice.common.jwt;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Objects;

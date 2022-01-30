@@ -1,23 +1,24 @@
 package task.notice.notice.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import task.notice.notice.domain.AttachFile;
+import task.notice.exception.exception.OwnerMismatchException;
+import task.notice.attachfile.domain.AttachFile;
 import task.notice.notice.domain.Notice;
-import task.notice.notice.dto.request.SaveAttachFileDto;
 import task.notice.notice.dto.request.SaveNoticeDto;
 import task.notice.notice.dto.request.UpdateNoticeDto;
 import task.notice.notice.dto.response.NoticeResponseDto;
 import task.notice.notice.repository.NoticeRepository;
-import task.notice.common.utils.AwsS3Uploader;
+import task.notice.common.aws.AwsS3Uploader;
 import task.notice.user.domain.User;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
@@ -50,7 +51,7 @@ public class NoticeService {
     // 공지사항 수정
     @Transactional
     public void updateNotice(Long noticeId, UpdateNoticeDto updateDto, User user) {
-        isMyNotice(noticeId, user, "공지를 수정할 권한이 없습니다.");
+        isMyNotice(noticeId, user, OwnerMismatchException.UPDATE_MISMATCH);
 
         Notice notice = getNotice(noticeId);
         notice.update(updateDto);
@@ -59,7 +60,7 @@ public class NoticeService {
     // 공지사항 삭제
     @Transactional
     public void deleteNotice(Long noticeId, User user) {
-        isMyNotice(noticeId, user, "공지를 삭제할 권한이 없습니다.");
+        isMyNotice(noticeId, user, OwnerMismatchException.DELETE_MISMATCH);
 
         noticeRepository.deleteById(noticeId);
     }
@@ -77,8 +78,8 @@ public class NoticeService {
     }
 
     private void isMyNotice(Long noticeId, User user, String message) {
-       if (!noticeRepository.existsByUserId(noticeId, user.getId())) {
-           throw new AccessDeniedException(message);
+        if (!noticeRepository.existsByUserId(noticeId, user.getId())) {
+           throw new OwnerMismatchException(message);
        }
     }
 }

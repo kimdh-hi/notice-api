@@ -1,9 +1,11 @@
-package task.notice.common.utils;
+package task.notice.common.jwt;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import task.notice.common.jwt.JwtUtils;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -59,8 +61,9 @@ public class JwtUtilsTest {
         String token = jwtUtils.createToken(username);
         // when
         Thread.sleep(1200);
+        boolean validate = jwtUtils.validate(token);
         // then
-        assertThrows(ExpiredJwtException.class, () -> jwtUtils.validate(token));
+        assertFalse(validate);
     }
 
     // 토큰 검증 실패 테스트 (변조된 토큰)
@@ -71,8 +74,9 @@ public class JwtUtilsTest {
         String token = jwtUtils.createToken(username);
         // when
         String manipulatedToken = token.concat("a");
+        boolean validate = jwtUtils.validate(manipulatedToken);
         // then
         assertNotEquals(token, manipulatedToken);
-        assertThrows(RuntimeException.class, () -> jwtUtils.validate(manipulatedToken));
+        assertFalse(validate);
     }
 }
